@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Wine {
+  id          String @id @default(cuid())
+  slug        String @unique
+  name        String
+  region      String
+  appellation String
+  cepage      String
+  millesime   Int?
+  formatLabel String
+  color       String
+  tastingNote String
+  priceCents  Int
+  stock       Int
+  position    Int    @default(0)
+
+  @@index([region])
+  @@index([color])
+  @@index([priceCents])
+}
