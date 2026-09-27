@@ -37,11 +37,13 @@ export type WineSummary = {
   formatLabel: string;
   color: WineColor;
   tastingNote: string;
+  imageSrc: string;
   priceCents: number;
   stock: number;
 };
 
 export type CatalogFilters = {
+  query: string;
   region: Region | null;
   color: WineColor | null;
   price: (typeof PRICE_BANDS)[number] | null;
@@ -56,15 +58,18 @@ export function colorLabel(color: WineColor) {
 }
 
 export function parseFilters(input: {
+  q?: string | string[];
   region?: string | string[];
   couleur?: string | string[];
   prix?: string | string[];
 }): CatalogFilters {
+  const query = (first(input.q) ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
   const regionValue = first(input.region);
   const colorValue = first(input.couleur);
   const priceValue = first(input.prix);
 
   return {
+    query,
     region: REGIONS.find((region) => region === regionValue) ?? null,
     color: colorValue ? parseColor(colorValue) : null,
     price: PRICE_BANDS.find((band) => band.id === priceValue) ?? null,

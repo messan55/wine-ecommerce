@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -20,9 +21,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { catalogHref } from "@/lib/catalog-url";
 import { COLORS, PRICE_BANDS, REGIONS } from "@/lib/catalog";
 
 type FilterState = {
+  q: string;
   region: string;
   couleur: string;
   prix: string;
@@ -35,6 +38,7 @@ export function CatalogFilters(filters: FilterState) {
 
   return (
     <div className="flex flex-col gap-4">
+      <SearchField filters={filters} />
       <div className="md:hidden">
         <Sheet>
           <SheetTrigger asChild>
@@ -69,6 +73,36 @@ export function CatalogFilters(filters: FilterState) {
   );
 }
 
+function SearchField({ filters }: { filters: FilterState }) {
+  return (
+    <form action="/" method="get" className="grid gap-1.5">
+      {filters.region ? (
+        <input type="hidden" name="region" value={filters.region} />
+      ) : null}
+      {filters.couleur ? (
+        <input type="hidden" name="couleur" value={filters.couleur} />
+      ) : null}
+      {filters.prix ? (
+        <input type="hidden" name="prix" value={filters.prix} />
+      ) : null}
+      <Label htmlFor="catalogue-q">Recherche</Label>
+      <div className="flex gap-2">
+        <Input
+          id="catalogue-q"
+          name="q"
+          type="search"
+          defaultValue={filters.q}
+          placeholder="Sancerre, pinot, 2022…"
+          className="h-10"
+        />
+        <Button type="submit" variant="outline" className="h-10 shrink-0">
+          Chercher
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 function FilterFields({
   idPrefix,
   filters,
@@ -77,19 +111,18 @@ function FilterFields({
   filters: FilterState;
 }) {
   const router = useRouter();
-  const active = Boolean(filters.region || filters.couleur || filters.prix);
+  const active = Boolean(
+    filters.q || filters.region || filters.couleur || filters.prix,
+  );
 
   function update(key: keyof FilterState, value: string) {
-    const next = {
-      ...filters,
-      [key]: value === "tous" ? "" : value,
-    };
-    const params = new URLSearchParams();
-    if (next.region) params.set("region", next.region);
-    if (next.couleur) params.set("couleur", next.couleur);
-    if (next.prix) params.set("prix", next.prix);
-    const query = params.toString();
-    router.push(query ? `/?${query}` : "/", { scroll: false });
+    router.push(
+      catalogHref({
+        ...filters,
+        [key]: value === "tous" ? "" : value,
+      }),
+      { scroll: false },
+    );
   }
 
   return (

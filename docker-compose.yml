@@ -17,5 +17,13 @@ services:
       timeout: 5s
       retries: 20
 
+  mail:
+    image: axllent/mailpit
+    container_name: cave-solive-mail
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   cave_postgres:

@@ -6,10 +6,18 @@ import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/components/cart-provider";
 import { cn } from "cn";
 
-export function SiteHeader() {
+export function SiteHeader({
+  email,
+  isAdmin = false,
+}: {
+  email: string | null;
+  isAdmin?: boolean;
+}) {
   const pathname = usePathname();
   const { count, ready } = useCart();
   const onCart = pathname === "/panier";
+  const onAccount = pathname.startsWith("/compte");
+  const onAdmin = pathname.startsWith("/admin");
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md">
@@ -22,15 +30,51 @@ export function SiteHeader() {
             Vins de France
           </span>
         </Link>
+        <form
+          action="/"
+          method="get"
+          className="hidden min-w-0 flex-1 justify-center md:flex"
+        >
+          <label className="sr-only" htmlFor="header-q">
+            Rechercher une bouteille
+          </label>
+          <input
+            id="header-q"
+            name="q"
+            type="search"
+            placeholder="Rechercher…"
+            className="h-9 w-full max-w-xs rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          />
+        </form>
         <nav className="flex items-center gap-2 sm:gap-5">
           <Link
             href="/"
             className={cn(
-              "hidden text-sm tracking-wide hover:text-wine sm:inline",
+              "hidden text-sm tracking-wide hover:text-wine lg:inline",
               pathname === "/" ? "text-wine" : "text-foreground",
             )}
           >
             La cave
+          </Link>
+          {isAdmin ? (
+            <Link
+              href="/admin"
+              className={cn(
+                "text-sm tracking-wide hover:text-wine",
+                onAdmin ? "text-wine" : "text-foreground",
+              )}
+            >
+              Admin
+            </Link>
+          ) : null}
+          <Link
+            href={email ? "/compte" : "/compte/connexion"}
+            className={cn(
+              "text-sm tracking-wide hover:text-wine",
+              onAccount ? "text-wine" : "text-foreground",
+            )}
+          >
+            {email ? "Compte" : "Connexion"}
           </Link>
           <Link
             href="/panier"

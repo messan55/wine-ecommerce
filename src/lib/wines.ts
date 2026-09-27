@@ -17,6 +17,7 @@ const wineSelect = {
   formatLabel: true,
   color: true,
   tastingNote: true,
+  imageSrc: true,
   priceCents: true,
   stock: true,
 } as const;
@@ -31,6 +32,7 @@ type WineRow = {
   formatLabel: string;
   color: string;
   tastingNote: string;
+  imageSrc: string;
   priceCents: number;
   stock: number;
 };
@@ -43,6 +45,7 @@ function toSummary(wine: WineRow): WineSummary {
 export async function listWines(filters: CatalogFilters) {
   const wines = await prisma.wine.findMany({
     where: {
+      ...searchWhere(filters.query),
       ...(filters.region ? { region: filters.region } : {}),
       ...(filters.color ? { color: filters.color } : {}),
       ...(filters.price
@@ -59,6 +62,23 @@ export async function listWines(filters: CatalogFilters) {
   });
 
   return wines.map(toSummary);
+}
+
+function searchWhere(query: string) {
+  if (!query) return {};
+  const year = Number(query);
+  return {
+    OR: [
+      { name: { contains: query, mode: "insensitive" as const } },
+      { appellation: { contains: query, mode: "insensitive" as const } },
+      { region: { contains: query, mode: "insensitive" as const } },
+      { cepage: { contains: query, mode: "insensitive" as const } },
+      { tastingNote: { contains: query, mode: "insensitive" as const } },
+      ...(Number.isInteger(year) && year >= 1900 && year <= 2100
+        ? [{ millesime: year }]
+        : []),
+    ],
+  };
 }
 
 export const getWineBySlug = cache(async (slug: string) => {

@@ -3,13 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/add-to-cart";
 import { Badge } from "@/components/ui/badge";
+import { WineImage } from "@/components/wine-image";
 import {
-  COLOR_BAND,
   colorLabel,
   formatEur,
   formatMillesime,
   stockLabel,
 } from "@/lib/catalog";
+import { bottleImageAlt } from "@/lib/wine-image";
 import { getWineBySlug } from "@/lib/wines";
 
 export const dynamic = "force-dynamic";
@@ -64,15 +65,14 @@ export default async function WinePage({
       </nav>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14">
-        <div className={`min-h-72 p-6 sm:p-8 ${COLOR_BAND[wine.color]}`}>
-          <p className="text-xs tracking-[0.22em] uppercase">
-            {colorLabel(wine.color)}
-          </p>
-          <p className="mt-10 font-serif text-5xl leading-none sm:text-6xl">
-            {formatMillesime(wine.millesime)}
-          </p>
-          <p className="mt-6 text-sm tracking-wide">{wine.formatLabel}</p>
-        </div>
+        <WineImage
+          src={wine.imageSrc}
+          alt={bottleImageAlt(wine.name)}
+          color={wine.color}
+          sizes="(min-width: 1024px) 36vw, 90vw"
+          className="min-h-80 aspect-[3/4] sm:min-h-[28rem]"
+          badge={`${colorLabel(wine.color)} · ${wine.formatLabel}`}
+        />
 
         <div>
           <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">

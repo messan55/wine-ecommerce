@@ -14,12 +14,15 @@ export default async function HomePage({
 }) {
   const raw = await searchParams;
   const filters = parseFilters({
+    q: raw.q,
     region: raw.region,
     couleur: raw.couleur,
     prix: raw.prix,
   });
   const wines = await listWines(filters);
-  const filtered = Boolean(filters.region || filters.color || filters.price);
+  const filtered = Boolean(
+    filters.query || filters.region || filters.color || filters.price,
+  );
 
   return (
     <div>
@@ -43,6 +46,7 @@ export default async function HomePage({
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
         <CatalogFilters
+          q={filters.query}
           region={filters.region ?? ""}
           couleur={filters.color ?? ""}
           prix={filters.price?.id ?? ""}
@@ -61,7 +65,7 @@ export default async function HomePage({
               Aucune bouteille pour cette sélection.
             </h3>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Élargissez la région, la couleur ou le prix.
+              Élargissez la recherche, la région, la couleur ou le prix.
             </p>
             <Button asChild className="mt-6 h-10" variant="outline">
               <Link href="/">Effacer les filtres</Link>
@@ -80,6 +84,7 @@ export default async function HomePage({
         {filtered && wines.length > 0 ? (
           <p className="mt-6 text-sm text-muted-foreground">
             {[
+              filters.query ? `« ${filters.query} »` : null,
               filters.region,
               filters.color === "rose"
                 ? "Rosé"

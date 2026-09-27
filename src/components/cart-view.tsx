@@ -1,29 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useCart } from "@/components/cart-provider";
 import { QuantityField } from "@/components/quantity-field";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { WineImage } from "@/components/wine-image";
 import {
   formatBottleCount,
   formatEur,
   formatMillesime,
   type WineSummary,
 } from "@/lib/catalog";
+import { bottleImageAlt } from "@/lib/wine-image";
+import { shippingCents, shippingHint, shippingUnits } from "@/lib/shipping";
 
-export function CartView({ wines }: { wines: WineSummary[] }) {
+export function CartView({
+  wines,
+  canceled = false,
+  signedIn = false,
+}: {
+  wines: WineSummary[];
+  canceled?: boolean;
+  signedIn?: boolean;
+}) {
   const { ready, lines, setQuantity, remove, clear } = useCart();
-  const [paymentOpen, setPaymentOpen] = useState(false);
   const bySlug = new Map(wines.map((wine) => [wine.slug, wine]));
 
   useEffect(() => {
@@ -74,6 +76,14 @@ export function CartView({ wines }: { wines: WineSummary[] }) {
     return sum + Math.min(row.line.quantity, row.wine.stock);
   }, 0);
 
+  const units = rows.reduce((sum, row) => {
+    if (!row.wine || row.wine.stock <= 0) return sum;
+    const quantity = Math.min(row.line.quantity, row.wine.stock);
+    return sum + shippingUnits(row.wine.formatLabel, quantity);
+  }, 0);
+  const deliveryCents = shippingCents(subtotal, units);
+  const totalCents = subtotal + deliveryCents;
+
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
       <ul className="divide-y divide-border border-y border-border">
@@ -107,7 +117,15 @@ export function CartView({ wines }: { wines: WineSummary[] }) {
           return (
             <li key={line.slug} className="flex flex-col gap-4 py-5">
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="flex min-w-0 items-start gap-4">
+                  <WineImage
+                    src={wine.imageSrc}
+                    alt={bottleImageAlt(wine.name)}
+                    color={wine.color}
+                    sizes="80px"
+                    className="h-20 w-16 shrink-0"
+                  />
+                  <div>
                   <Link
                     href={`/vin/${wine.slug}`}
                     className="font-serif text-2xl leading-tight hover:text-wine"
@@ -119,6 +137,7 @@ export function CartView({ wines }: { wines: WineSummary[] }) {
                     {wine.formatLabel}
                   </p>
                   <p className="mt-1 text-sm">{formatEur(wine.priceCents)}</p>
+                  </div>
                 </div>
                 <p className="font-serif text-xl">
                   {unavailable
@@ -159,20 +178,50 @@ export function CartView({ wines }: { wines: WineSummary[] }) {
           {formatBottleCount(bottleCount)}
         </p>
         <Separator className="my-4" />
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="text-sm">Sous-total TTC</span>
-          <span className="font-serif text-2xl">{formatEur(subtotal)}</span>
+        <div className="flex items-baseline justify-between gap-3 text-sm">
+          <span>Sous-total TTC</span>
+          <span>{formatEur(subtotal)}</span>
+        </div>
+        <div className="mt-2 flex items-baseline justify-between gap-3 text-sm">
+          <span>Livraison</span>
+          <span>
+            {deliveryCents === 0 ? "Offerte" : formatEur(deliveryCents)}
+          </span>
+        </div>
+        <div className="mt-3 flex items-baseline justify-between gap-3">
+          <span className="text-sm">Total TTC</span>
+          <span className="font-serif text-2xl">{formatEur(totalCents)}</span>
         </div>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          La livraison n’est pas encore calculée. Le paiement viendra ensuite.
+          {shippingHint(subtotal, deliveryCents)} Commander écrit la
+          commande en cave et retire le stock.
+          {signedIn
+            ? " Le règlement se fait ensuite par carte, via Stripe."
+            : " Un compte est nécessaire avant de commander."}
         </p>
-        <Button
-          type="button"
-          className="mt-5 h-11 w-full"
-          onClick={() => setPaymentOpen(true)}
-        >
-          Commander
-        </Button>
+        {canceled ? (
+          <p className="mt-3 text-sm" role="status">
+            Le paiement a été interrompu. Rien n’a été débité.
+          </p>
+        ) : null}
+        {signedIn ? (
+          <Button asChild className="mt-5 h-11 w-full">
+            <Link href="/commande">Commander</Link>
+          </Button>
+        ) : (
+          <div className="mt-5 grid gap-2">
+            <Button asChild className="h-11 w-full">
+              <Link href="/compte/connexion?next=/commande">
+                Se connecter pour commander
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-11 w-full">
+              <Link href="/compte/inscription?next=/commande">
+                Créer un compte
+              </Link>
+            </Button>
+          </div>
+        )}
         <Button
           type="button"
           variant="ghost"
@@ -182,25 +231,6 @@ export function CartView({ wines }: { wines: WineSummary[] }) {
           Vider le panier
         </Button>
       </aside>
-
-      <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="font-serif text-xl">
-              Pas de paiement pour l’instant
-            </DialogTitle>
-            <DialogDescription className="leading-relaxed text-foreground/80">
-              Le règlement par carte viendra ensuite. Rien n’est débité, et ce
-              panier n’est pas transmis : ce n’est pas une commande.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button type="button" onClick={() => setPaymentOpen(false)}>
-              Compris
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

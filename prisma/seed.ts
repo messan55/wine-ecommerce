@@ -197,10 +197,12 @@ async function main() {
 
   try {
     for (const wine of wines) {
+      const row = { ...wine, imageSrc: `/bottles/${wine.slug}.jpg` };
+      const { stock, ...catalog } = row;
       await prisma.wine.upsert({
         where: { slug: wine.slug },
-        update: wine,
-        create: wine,
+        update: catalog,
+        create: row,
       });
     }
     console.log(`${wines.length} bouteilles en cave.`);

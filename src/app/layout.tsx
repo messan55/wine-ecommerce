@@ -4,6 +4,7 @@ import { AgeGate } from "@/components/age-gate";
 import { CartProvider } from "@/components/cart-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getCurrentUser } from "@/lib/auth";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -26,7 +27,9 @@ export const metadata: Metadata = {
     "Cave à vins française. Bordeaux, Bourgogne, Loire, Rhône, Alsace et Champagne, choisis bouteille par bouteille.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const user = await getCurrentUser();
+
   return (
     <html
       lang="fr"
@@ -34,7 +37,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <CartProvider>
-          <SiteHeader />
+          <SiteHeader
+            email={user?.email ?? null}
+            isAdmin={Boolean(user?.isAdmin)}
+          />
           <main className="flex-1">{children}</main>
           <SiteFooter />
           <AgeGate />
