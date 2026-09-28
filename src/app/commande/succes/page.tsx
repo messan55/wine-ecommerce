@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ClearPaidCart } from "@/components/clear-paid-cart";
+import { OpenAuthButton } from "@/components/open-auth";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { OrderAddress } from "@/components/order-address";
@@ -114,16 +115,17 @@ export default async function OrderSuccessPage({
         </Button>
         {user ? (
           <Button asChild variant="outline" className="h-10">
-            <Link href="/compte">Voir l’historique</Link>
+            <Link href="/compte/commandes">Voir l’historique</Link>
           </Button>
         ) : (
-          <Button asChild variant="outline" className="h-10">
-            <Link
-              href={`/compte/inscription?email=${encodeURIComponent(order.email ?? "")}&next=/compte`}
-            >
-              Créer un compte
-            </Link>
-          </Button>
+          <OpenAuthButton
+            variant="outline"
+            className="h-10"
+            next="/compte"
+            email={order.email ?? undefined}
+          >
+            Créer un compte
+          </OpenAuthButton>
         )}
       </div>
     </div>

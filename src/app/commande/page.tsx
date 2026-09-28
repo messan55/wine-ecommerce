@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { CheckoutForm } from "@/components/checkout-form";
 import { getCurrentUser } from "@/lib/auth";
-import { getLastShippingAddress } from "@/lib/checkout";
+import { getSavedAddress } from "@/lib/user-address";
 import { listWineCatalog } from "@/lib/wines";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +18,9 @@ export default async function CheckoutPage() {
     redirect("/compte/connexion?next=/commande");
   }
 
-  const [wines, lastAddress] = await Promise.all([
+  const [wines, savedAddress] = await Promise.all([
     listWineCatalog(),
-    getLastShippingAddress(user.id),
+    getSavedAddress(user.id),
   ]);
 
   return (
@@ -36,7 +36,7 @@ export default async function CheckoutPage() {
         règlement.
       </p>
       <div className="mt-8">
-        <CheckoutForm wines={wines} lastAddress={lastAddress} />
+        <CheckoutForm wines={wines} savedAddress={savedAddress} />
       </div>
     </div>
   );

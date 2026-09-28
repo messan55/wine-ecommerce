@@ -268,7 +268,7 @@ async function reserveOrder(
 async function markOrderPaid(session: Stripe.Checkout.Session) {
   const order = await findOrderForSession(session);
   if (!order) return null;
-  if (order.status === "paid") return order;
+  if (order.status === "paid" || order.status === "shipped") return order;
 
   const email = normalizeOrderEmail(
     session.customer_details?.email ?? session.customer_email ?? order.email,
@@ -389,7 +389,12 @@ export async function getOrderBySession(sessionId: string) {
   });
 }
 
-const VISIBLE_STATUSES = ["placed", "paid", "pending"] as const;
+const VISIBLE_STATUSES = [
+  "placed",
+  "paid",
+  "pending",
+  "shipped",
+] as const;
 
 export async function getVisibleOrder(orderId: string, userId: string) {
   return prisma.order.findFirst({
@@ -402,28 +407,5 @@ export async function getVisibleOrder(orderId: string, userId: string) {
   });
 }
 
-export async function getLastShippingAddress(userId: string) {
-  const order = await prisma.order.findFirst({
-    where: { userId, shipLine1: { not: "" } },
-    orderBy: { createdAt: "desc" },
-    select: {
-      shipName: true,
-      shipLine1: true,
-      shipLine2: true,
-      shipPostal: true,
-      shipCity: true,
-      shipPhone: true,
-    },
-  });
-  if (!order) return null;
-  return {
-    name: order.shipName,
-    line1: order.shipLine1,
-    line2: order.shipLine2,
-    postal: order.shipPostal,
-    city: order.shipCity,
-    phone: order.shipPhone,
-  };
-}
 
 export { VISIBLE_STATUSES };

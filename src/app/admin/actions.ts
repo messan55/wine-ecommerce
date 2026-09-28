@@ -8,6 +8,8 @@ import {
   saveUploadedBottleImage,
   WineFormError,
 } from "@/lib/admin";
+import { sendOrderShipped } from "@/lib/mail";
+import { SHIPPABLE_STATUSES } from "@/lib/orders";
 import { prisma } from "@/lib/prisma";
 
 export type WineActionState = {
@@ -90,6 +92,43 @@ export async function deleteWineAction(formData: FormData) {
   }
   revalidatePath("/");
   redirect("/admin");
+}
+
+export async function shipOrderAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) redirect("/admin/commandes");
+
+  const updated = await prisma.order.updateMany({
+    where: { id, status: { in: [...SHIPPABLE_STATUSES] } },
+    data: { status: "shipped", shippedAt: new Date() },
+  });
+  if (updated.count !== 1) {
+    redirect(`/admin/commandes/${id}?erreur=deja`);
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: { lines: { orderBy: { name: "asc" } } },
+  });
+  let mailed = false;
+  if (order) {
+    try {
+      mailed = await sendOrderShipped(order);
+    } catch {
+      mailed = false;
+    }
+  }
+
+  revalidatePath("/admin/commandes");
+  revalidatePath(`/admin/commandes/${id}`);
+  revalidatePath("/compte");
+  if (order?.userId) revalidatePath(`/compte/commandes/${id}`);
+  redirect(
+    mailed
+      ? `/admin/commandes/${id}?expediee=1`
+      : `/admin/commandes/${id}?expediee=1&courrier=0`,
+  );
 }
 
 function fileFromForm(formData: FormData, name: string) {

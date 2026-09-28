@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Outfit } from "next/font/google";
 import { AgeGate } from "@/components/age-gate";
+import { AuthDrawerProvider } from "@/components/auth-drawer";
 import { CartProvider } from "@/components/cart-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -37,13 +38,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <CartProvider>
-          <SiteHeader
-            email={user?.email ?? null}
-            isAdmin={Boolean(user?.isAdmin)}
-          />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-          <AgeGate />
+          <AuthDrawerProvider signedIn={Boolean(user)}>
+            <SiteHeader
+              email={user?.email ?? null}
+              isAdmin={Boolean(user?.isAdmin)}
+            />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+            <AgeGate />
+          </AuthDrawerProvider>
         </CartProvider>
       </body>
     </html>

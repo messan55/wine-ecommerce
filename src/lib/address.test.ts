@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   AddressError,
   addressFromStripe,
+  bookFromShipFields,
   formatAddress,
+  formatBookLines,
   parseShippingAddress,
+  resolveSavedAddress,
 } from "@/lib/address";
 
 const valid = {
@@ -96,5 +99,48 @@ describe("addressFromStripe", () => {
 
   it("ignore une session sans rue", () => {
     expect(addressFromStripe({})).toBeNull();
+  });
+});
+
+describe("carnet", () => {
+  const book = {
+    name: "Marie Cave",
+    line1: "14 rue des Archives",
+    line2: "",
+    postal: "75004",
+    city: "Paris",
+    phone: "0142780000",
+  };
+
+  it("ignore une fiche sans rue", () => {
+    expect(
+      bookFromShipFields({
+        shipName: "Marie",
+        shipLine1: "  ",
+        shipLine2: "",
+        shipPostal: "75004",
+        shipCity: "Paris",
+        shipPhone: "",
+      }),
+    ).toBeNull();
+  });
+
+  it("préfère le carnet à la dernière commande", () => {
+    expect(resolveSavedAddress(book, { ...book, city: "Lyon" })).toEqual({
+      ...book,
+      source: "book",
+    });
+    expect(resolveSavedAddress(null, book)).toEqual({
+      ...book,
+      source: "order",
+    });
+    expect(resolveSavedAddress(null, null)).toBeNull();
+  });
+
+  it("compose les lignes du carnet", () => {
+    expect(formatBookLines(book)).toEqual([
+      "14 rue des Archives",
+      "75004 Paris",
+    ]);
   });
 });

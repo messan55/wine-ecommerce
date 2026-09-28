@@ -8,6 +8,60 @@ export type ShippingAddress = {
   country: "FR";
 };
 
+export type BookAddress = {
+  name: string;
+  line1: string;
+  line2: string;
+  postal: string;
+  city: string;
+  phone: string;
+};
+
+export type SavedAddress = BookAddress & {
+  source: "book" | "order";
+};
+
+export type StoredAddress = BookAddress & {
+  id: string;
+  isDefault: boolean;
+};
+
+export function formatBookLines(address: BookAddress) {
+  return [
+    address.line1,
+    address.line2,
+    `${address.postal} ${address.city}`.trim(),
+  ].filter(Boolean);
+}
+
+export function bookFromShipFields(fields: {
+  shipName: string;
+  shipLine1: string;
+  shipLine2: string;
+  shipPostal: string;
+  shipCity: string;
+  shipPhone: string;
+}): BookAddress | null {
+  if (!fields.shipLine1.trim()) return null;
+  return {
+    name: fields.shipName,
+    line1: fields.shipLine1,
+    line2: fields.shipLine2,
+    postal: fields.shipPostal,
+    city: fields.shipCity,
+    phone: fields.shipPhone,
+  };
+}
+
+export function resolveSavedAddress(
+  book: BookAddress | null,
+  lastOrder: BookAddress | null,
+): SavedAddress | null {
+  if (book) return { ...book, source: "book" };
+  if (lastOrder) return { ...lastOrder, source: "order" };
+  return null;
+}
+
 export class AddressError extends Error {
   constructor(message: string) {
     super(message);

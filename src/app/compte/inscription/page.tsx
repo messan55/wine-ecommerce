@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { AuthForm } from "@/components/auth-form";
-import { registerAction } from "@/app/compte/actions";
+import { OpenAuthOnMount } from "@/components/open-auth";
 import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -28,19 +27,10 @@ export default async function RegisterPage({
       </p>
       <h1 className="mt-2 font-serif text-4xl sm:text-5xl">Inscription</h1>
       <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-        Un e-mail et un mot de passe. Les commandes déjà payées avec la même
-        adresse apparaîtront ici.
+        Indiquez votre e-mail dans le panneau. S’il est déjà connu, on ouvre le
+        compte ; sinon on en crée un.
       </p>
-      <AuthForm
-        action={registerAction}
-        submitLabel="Créer le compte"
-        pendingLabel="Création…"
-        next={safeNext(next)}
-        emailDefault={first(raw.email)}
-        switchHref={`/compte/connexion?next=${encodeURIComponent(safeNext(next))}`}
-        switchLabel="Déjà un compte ? Se connecter"
-        register
-      />
+      <OpenAuthOnMount next={safeNext(next)} email={first(raw.email)} />
     </div>
   );
 }

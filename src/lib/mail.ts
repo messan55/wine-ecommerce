@@ -102,6 +102,40 @@ export async function sendOrderConfirmation(order: MailOrder) {
   return true;
 }
 
+export async function sendOrderShipped(order: MailOrder) {
+  const to = order.email?.trim();
+  if (!to || !mailConfigured()) return false;
+
+  const transporter = createTransport();
+  const address = formatAddress(order);
+  const destination = address
+    ? [address.name, ...address.lines].filter(Boolean).join("\n")
+    : "Adresse à confirmer";
+  const bottles = order.lines
+    .map((line) => `${line.quantity} × ${line.name}`)
+    .join("\n");
+
+  await transporter.sendMail({
+    from: mailFrom(),
+    to,
+    subject: "Cave Solive — commande expédiée",
+    text: [
+      "Les bouteilles ont quitté la cave.",
+      "",
+      `Référence ${order.id}`,
+      "",
+      "Livraison",
+      destination,
+      "",
+      bottles,
+      "",
+      "Cave Solive — 14 rue des Archives, 75004 Paris",
+    ].join("\n"),
+  });
+
+  return true;
+}
+
 export async function sendContactMessage(input: {
   name: string;
   email: string;
@@ -119,6 +153,28 @@ export async function sendContactMessage(input: {
       `${input.name} <${input.email}> écrit :`,
       "",
       input.message,
+    ].join("\n"),
+  });
+  return true;
+}
+
+export async function sendPasswordReset(input: { email: string; url: string }) {
+  if (!mailConfigured()) return false;
+
+  const transporter = createTransport();
+  await transporter.sendMail({
+    from: mailFrom(),
+    to: input.email,
+    subject: "Cave Solive — nouveau mot de passe",
+    text: [
+      "Vous avez demandé à changer le mot de passe de la cave.",
+      "",
+      "Ouvrez ce lien, valable une heure :",
+      input.url,
+      "",
+      "Si ce n’est pas vous, ignorez ce message.",
+      "",
+      "Cave Solive — 14 rue des Archives, 75004 Paris",
     ].join("\n"),
   });
   return true;

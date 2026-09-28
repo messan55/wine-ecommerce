@@ -1,27 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
+import { AddressFields } from "@/components/address-fields";
 import { useCart } from "@/components/cart-provider";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { formatBottleCount, formatEur, type WineSummary } from "@/lib/catalog";
+import type { SavedAddress } from "@/lib/address";
 import { shippingCents, shippingHint, shippingUnits } from "@/lib/shipping";
 
 export function CheckoutForm({
   wines,
-  lastAddress,
+  savedAddress,
 }: {
   wines: WineSummary[];
-  lastAddress: {
-    name: string;
-    line1: string;
-    line2: string;
-    postal: string;
-    city: string;
-    phone: string;
-  } | null;
+  savedAddress: SavedAddress | null;
 }) {
   const { ready, lines, clear } = useCart();
   const [busy, setBusy] = useState(false);
@@ -134,71 +127,14 @@ export function CheckoutForm({
       <div>
         <h2 className="font-serif text-2xl">Adresse de livraison</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          France métropolitaine uniquement.
+          {savedAddress?.source === "book"
+            ? "On a repris l’adresse de votre compte. Modifiez-la si besoin."
+            : savedAddress?.source === "order"
+              ? "On a repris celle de votre dernière commande. Elle sera enregistrée."
+              : "France métropolitaine uniquement. On la gardera pour la prochaine fois."}
         </p>
-        <div className="mt-6 grid max-w-xl gap-4">
-          <Field label="Nom" htmlFor="name">
-            <Input
-              id="name"
-              name="name"
-              required
-              autoComplete="name"
-              defaultValue={lastAddress?.name ?? ""}
-              className="h-10"
-            />
-          </Field>
-          <Field label="Rue" htmlFor="line1">
-            <Input
-              id="line1"
-              name="line1"
-              required
-              autoComplete="address-line1"
-              defaultValue={lastAddress?.line1 ?? ""}
-              className="h-10"
-            />
-          </Field>
-          <Field label="Complément" htmlFor="line2">
-            <Input
-              id="line2"
-              name="line2"
-              autoComplete="address-line2"
-              defaultValue={lastAddress?.line2 ?? ""}
-              className="h-10"
-            />
-          </Field>
-          <div className="grid gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
-            <Field label="Code postal" htmlFor="postal">
-              <Input
-                id="postal"
-                name="postal"
-                required
-                inputMode="numeric"
-                autoComplete="postal-code"
-                defaultValue={lastAddress?.postal ?? ""}
-                className="h-10"
-              />
-            </Field>
-            <Field label="Ville" htmlFor="city">
-              <Input
-                id="city"
-                name="city"
-                required
-                autoComplete="address-level2"
-                defaultValue={lastAddress?.city ?? ""}
-                className="h-10"
-              />
-            </Field>
-          </div>
-          <Field label="Téléphone" htmlFor="phone">
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              autoComplete="tel"
-              defaultValue={lastAddress?.phone ?? ""}
-              className="h-10"
-            />
-          </Field>
+        <div className="mt-6">
+          <AddressFields defaults={savedAddress} />
         </div>
       </div>
 
@@ -248,22 +184,5 @@ export function CheckoutForm({
         </Button>
       </aside>
     </form>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="grid gap-2">
-      <Label htmlFor={htmlFor}>{label}</Label>
-      {children}
-    </div>
   );
 }

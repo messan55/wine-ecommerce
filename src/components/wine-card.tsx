@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CardAddButton } from "@/components/card-add-button";
 import { Badge } from "@/components/ui/badge";
 import { WineImage } from "@/components/wine-image";
 import {
@@ -13,7 +14,7 @@ import { bottleImageAlt } from "@/lib/wine-image";
 export function WineCard({ wine }: { wine: WineSummary }) {
   return (
     <article className="flex h-full flex-col border border-border bg-card shadow-[0_1px_0_rgba(61,20,28,0.04)]">
-      <Link href={`/vin/${wine.slug}`} className="group flex h-full flex-col">
+      <Link href={`/vin/${wine.slug}`} className="group flex flex-1 flex-col">
         <WineImage
           src={wine.imageSrc}
           alt={bottleImageAlt(wine.name)}
@@ -45,6 +46,7 @@ export function WineCard({ wine }: { wine: WineSummary }) {
           </div>
         </div>
       </Link>
+      <CardAddButton slug={wine.slug} name={wine.name} stock={wine.stock} />
     </article>
   );
 }

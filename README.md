@@ -52,8 +52,9 @@ npm test
 - `/panier` — le panier (localStorage)
 - `/commande` — adresse et frais, avant Stripe
 - `/commande/succes` — confirmation après commande
-- `/compte` — inscription, connexion, historique des commandes
+- `/compte` — connexion (tiroir à droite, e-mail d’abord), commandes, adresses, mot de passe oublié
 - `/admin` — catalogue (création, prix, stock), réservé aux comptes admin
+- `/admin/commandes` — ventes : file à expédier, détail, bouton Expédiée (e-mail au client)
 
 La confirmation 18+ et le panier restent dans le navigateur (`cave-solive.majorite`, `cave-solive.panier`) jusqu’à la commande. Le paiement exige un compte. Les commandes et le stock vivent en PostgreSQL. Ajoutez `AUTH_SECRET` dans `.env` (une chaîne aléatoire) pour les sessions. Le premier compte créé en local est admin ; ensuite, mettez `ADMIN_EMAIL` pour en désigner un autre.
 

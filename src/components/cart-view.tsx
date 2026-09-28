@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { OpenAuthButton } from "@/components/open-auth";
 import { useCart } from "@/components/cart-provider";
 import { QuantityField } from "@/components/quantity-field";
 import { Button } from "@/components/ui/button";
@@ -209,18 +210,9 @@ export function CartView({
             <Link href="/commande">Commander</Link>
           </Button>
         ) : (
-          <div className="mt-5 grid gap-2">
-            <Button asChild className="h-11 w-full">
-              <Link href="/compte/connexion?next=/commande">
-                Se connecter pour commander
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-11 w-full">
-              <Link href="/compte/inscription?next=/commande">
-                Créer un compte
-              </Link>
-            </Button>
-          </div>
+          <OpenAuthButton next="/commande" className="mt-5 h-11 w-full">
+            Se connecter pour commander
+          </OpenAuthButton>
         )}
         <Button
           type="button"

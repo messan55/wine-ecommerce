@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { AuthForm } from "@/components/auth-form";
-import { loginAction } from "@/app/compte/actions";
+import { OpenAuthOnMount } from "@/components/open-auth";
 import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -27,16 +26,10 @@ export default async function LoginPage({
       </p>
       <h1 className="mt-2 font-serif text-4xl sm:text-5xl">Connexion</h1>
       <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-        Retrouvez vos commandes payées sur cet e-mail.
+        Indiquez votre e-mail dans le panneau. S’il est déjà connu, on ouvre le
+        compte ; sinon on en crée un.
       </p>
-      <AuthForm
-        action={loginAction}
-        submitLabel="Se connecter"
-        pendingLabel="Connexion…"
-        next={safeNext(next)}
-        switchHref={`/compte/inscription?next=${encodeURIComponent(safeNext(next))}`}
-        switchLabel="Pas encore de compte ? S’inscrire"
-      />
+      <OpenAuthOnMount next={safeNext(next)} />
     </div>
   );
 }

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
+import { AccountMenu } from "@/components/account-menu";
+import { useAuthDrawer } from "@/components/auth-drawer";
 import { useCart } from "@/components/cart-provider";
 import { cn } from "cn";
 
@@ -15,9 +17,8 @@ export function SiteHeader({
 }) {
   const pathname = usePathname();
   const { count, ready } = useCart();
+  const { open, openAuth } = useAuthDrawer();
   const onCart = pathname === "/panier";
-  const onAccount = pathname.startsWith("/compte");
-  const onAdmin = pathname.startsWith("/admin");
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md">
@@ -56,26 +57,20 @@ export function SiteHeader({
           >
             La cave
           </Link>
-          {isAdmin ? (
-            <Link
-              href="/admin"
+          {email ? (
+            <AccountMenu isAdmin={isAdmin} />
+          ) : (
+            <button
+              type="button"
               className={cn(
                 "text-sm tracking-wide hover:text-wine",
-                onAdmin ? "text-wine" : "text-foreground",
+                open ? "text-wine" : "text-foreground",
               )}
+              onClick={() => openAuth()}
             >
-              Admin
-            </Link>
-          ) : null}
-          <Link
-            href={email ? "/compte" : "/compte/connexion"}
-            className={cn(
-              "text-sm tracking-wide hover:text-wine",
-              onAccount ? "text-wine" : "text-foreground",
-            )}
-          >
-            {email ? "Compte" : "Connexion"}
-          </Link>
+              Connexion
+            </button>
+          )}
           <Link
             href="/panier"
             aria-label={

@@ -13,9 +13,10 @@ export default function PrivacyPage() {
       <p>Mise à jour : septembre 2026.</p>
       <LegalSection title="Ce que nous gardons">
         <p>
-          Pour un compte : l’e-mail et le mot de passe chiffré. Pour une
-          commande : les bouteilles, le montant, l’adresse de livraison, le
-          téléphone s’il est donné, et les références Stripe du paiement.
+          Pour un compte : l’e-mail, le mot de passe chiffré, et l’adresse de
+          livraison si vous l’enregistrez. Pour une commande : les bouteilles,
+          le montant, l’adresse, le téléphone s’il est donné, et les
+          références Stripe du paiement.
         </p>
         <p>
           Le panier et le contrôle de majorité restent dans votre navigateur
@@ -26,7 +27,8 @@ export default function PrivacyPage() {
       <LegalSection title="À quoi ça sert">
         <p>
           Servir la commande, retirer le stock, envoyer l’e-mail de
-          confirmation, et, si vous écrivez via{" "}
+          confirmation ou le lien de mot de passe oublié, et, si vous
+          écrivez via{" "}
           <Link href="/contact" className="underline underline-offset-4">
             Contact
           </Link>

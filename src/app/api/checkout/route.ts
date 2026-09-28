@@ -7,6 +7,7 @@ import {
   parseCheckoutLines,
   prepareCheckoutLines,
 } from "@/lib/checkout";
+import { saveUserAddress } from "@/lib/user-address";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
         ? body.address
         : null,
     );
+    await saveUserAddress(user.id, address);
     const lines = await prepareCheckoutLines(parseCheckoutLines(body));
     const origin = request.nextUrl.origin;
     const session = await createCheckoutSession(lines, origin, user, address);
